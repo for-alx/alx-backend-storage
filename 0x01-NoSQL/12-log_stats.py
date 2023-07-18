@@ -6,11 +6,6 @@ from pymongo import MongoClient
 
 
 if __name__ == '__main__':
-    """
-    Log stats
-        Args:
-        Returns:
-    """
     connection = MongoClient('mongodb://localhost:27017')
     collection = connection.logs.nginx
 
