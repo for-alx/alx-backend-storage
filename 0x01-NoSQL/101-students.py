@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Aggregation operations: average
+Returns all students sorted by average score:
 """
 from collections import OrderedDict
 
 
 def top_students(mongo_collection):
     """
-    Gets list of students from mongo collection
-    and returns the list of computed average for
-    each student
+        Args:
+            mongo_collection (): pymongo collection object
+        Returns:
+            Returns all students sorted by average score:
     """
     pipe = [{'$addFields': {'averageScore': {'$avg': '$topics.score'}}},
                 {'$sort': OrderedDict([('averageScore', -1), ('name', 1)])}]
