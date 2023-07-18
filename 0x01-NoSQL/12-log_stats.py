@@ -2,13 +2,15 @@
 """
 Log stats
 """
-
-
 from pymongo import MongoClient
 
 
 if __name__ == '__main__':
-    """Log stats"""
+    """
+    Log stats
+        Args:
+        Returns:
+    """
     connection = MongoClient('mongodb://localhost:27017')
     collection = connection.logs.nginx
 
@@ -17,9 +19,9 @@ if __name__ == '__main__':
     methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     print('Methods:')
 
-    for request in methods:
-        print('\tmethods {}: {}'.format(request,
-              collection.count_documents({'method': request})))
+    for req in methods:
+        print('\tmethods {}: {}'.format(req,
+              collection.count_documents({'method': req})))
 
     print('{} status check'.format(collection.count_documents(
-          {'method': 'GET', 'path': '/status'})))
+            {'method': 'GET', 'path': '/status'})))
