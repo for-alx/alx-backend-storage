@@ -13,5 +13,5 @@ def top_students(mongo_collection):
             Returns all students sorted by average score:
     """
     pipe = [{'$addFields': {'averageScore': {'$avg': '$topics.score'}}},
-                {'$sort': OrderedDict([('averageScore', -1), ('name', 1)])}]
+            {'$sort': OrderedDict([('averageScore', -1), ('name', 1)])}]
     return mongo_collection.aggregate(pipe)
