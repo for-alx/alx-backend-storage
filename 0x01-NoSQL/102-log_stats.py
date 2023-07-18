@@ -6,25 +6,44 @@ from pymongo import MongoClient
 
 
 if __name__ == "__main__":
-    connection = MongoClient("mongodb://127.0.0.1:27017")
-    nginx = connection.logs.nginx
-    logs = nginx.count_documents({})
-    print(f"{logs} logs")
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    db = client.logs.nginx
+
+    num_logs = db.count_documents({})
+    print(f"{num_logs} logs")
+
+    get = db.count_documents({'method': 'GET'})
+    post = db.count_documents({'method': 'POST'})
+    put = db.count_documents({'method': 'PUT'})
+    patch = db.count_documents({'method': 'PATCH'})
+    delete = db.count_documents({'method': 'DELETE'})
+
     print("Methods:")
-    for method in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
-        count = nginx.count_documents({"method": method})
-        print(f"\tmethod {method}: {count}")
-    stats = nginx.count_documents({"path": "/status"})
-    print(f"{stats} status check")
+    print(f"\tmethod GET: {get}")
+    print(f"\tmethod POST: {post}")
+    print(f"\tmethod PUT: {put}")
+    print(f"\tmethod PATCH: {patch}")
+    print(f"\tmethod DELETE: {delete}")
+
+    status = db.count_documents({'method': 'GET', 'path': '/status'})
+    print(f"{status} status check")
+
     print("IPs:")
-    ip_add = nginx.aggregate(
-        [
-            {"$group": {"_id": "$ip", "sum": {"$sum": 1}}},
-            {"$sort": {"sum": -1}},
-            {"$limit": 10},
-        ]
-    )
-    for ip in ip_add:
-        sum = ip["sum"]
-        ip = ip["_id"]
-        print(f"\t{ip}: {sum}")
+    ips = db.aggregate([
+        {"$group":
+            {
+                "_id": "$ip",
+                "count": {"$sum": 1}
+            }
+         },
+        {"$sort": {"count": -1}},
+        {"$limit": 10},
+        {"$project": {
+            "_id": 0,
+            "ip": "$_id",
+            "count": 1
+        }}
+    ])
+
+    for ip in ips:
+        print(f"\t{ip.get('ip')}: {ip.get('count')}")
