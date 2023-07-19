@@ -10,6 +10,40 @@ from functools import wraps
 Types = Union[str, bytes, int, float]
 
 
+def count_calls(method: Callable) -> Callable:
+    """
+    """
+    key = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        """
+        self._redis.incr(key)
+        return method(self, *args, **kwargs)
+
+    return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    """
+    key = method.__qualname__
+    i = "".join([key, ":inputs"])
+    o = "".join([key, ":outputs"])
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        """
+        self._redis.rpush(i, str(args))
+        res = method(self, *args, **kwargs)
+        self._redis.rpush(o, str(res))
+        return res
+
+    return wrapper
+
+
 class Cache:
     """Cache
     """
