@@ -1,51 +1,50 @@
 #!/usr/bin/env python3
 """ Redis basic @"""
 import redis
+import sys
 from uuid import uuid4
 from typing import Callable, Any, Optional, Union
 from functools import wraps
 
 
+Types = Union[str, bytes, int, float]
+
+
 class Cache:
     """Cache
     """
-    def __init__(self) -> None:
+
+    def __init__(self):
         """Initialize
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    @call_history
     @count_calls
-    def store(self, data: Union[str, bytes,  int,  float]) -> str:
-        """ Stores data in redis with randomly generated uuid key
+    @call_history
+    def store(self, data: Types) -> str:
+        """Stores data in redis with randomly generated uuid key
         """
         key = str(uuid4())
-        client = self._redis
-        client.set(key, data)
+        self._redis.mset({key: data})
         return key
 
-    def get_str(self, data: bytes) -> str:
-        """bytes to string
+    def get(self, key: str, fn: Optional[Callable] = None) \
+            -> Types:
         """
-        return data.decode('utf-8')
+        correct data type
+        """
+        if fn:
+            return fn(self._redis.get(key))
+        data = self._redis.get(key)
+        return data
 
-    def get_int(self, data: bytes) -> int:
+    def get_int(self: bytes) -> int:
         """bytes to integers
         """
-        return int(data)
+        return int.from_bytes(self, sys.byteorder)
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Any:
-        """correct data type
+    def get_str(self: bytes) -> str:
+        """bytes to string
         """
-        client = self._redis
-        value = client.get(key)
-        if not value:
-            return
-        if fn is int:
-            return self.get_int(value)
-        if fn is str:
-            return self.get_str(value)
-        if callable(fn):
-            return fn(value)
-        return value
+        return self.decode("utf-8")
